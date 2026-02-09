@@ -6,12 +6,29 @@
   "compatibility_flags": ["nodejs_compat"],
   "minify": true,
   "keep_vars": true,
+  
   "kv_namespaces": [
     {
       "binding": "STORAGE",
       "id": "your_kv_namespace_id"
     }
   ],
+  
+  "r2_buckets": [
+    {
+      "binding": "FILES",
+      "bucket_name": "cloud-code-files"
+    }
+  ],
+  
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cloud-code-db",
+      "database_id": "your_d1_database_id"
+    }
+  ],
+  
   "vars": {
     "USE_CONTAINER": "false"
   }
