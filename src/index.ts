@@ -16,7 +16,7 @@ function verifyBasicAuth(request: Request): Response | null {
     })
   }
 
-  const expected = btoa(\`\${username}:\${password}\`)
+  const expected = btoa(`${username}:${password}`)
   const provided = authorization.slice(6)
 
   if (provided !== expected) {
@@ -74,7 +74,7 @@ async function handleFetch(request: Request) {
       return new Response('No file provided', { status: 400 })
     }
     
-    const key = \`uploads/\${Date.now()}-\${file.name}\`
+    const key = `uploads/\${Date.now()}-\${file.name}`
     await env.FILES.put(key, file.stream(), {
       httpMetadata: { contentType: file.type }
     })
@@ -82,7 +82,7 @@ async function handleFetch(request: Request) {
     return new Response(JSON.stringify({ 
       success: true, 
       key,
-      url: \`/api/files/\${key}\`
+      url: `/api/files/\${key}`
     }), {
       headers: { 'Content-Type': 'application/json' }
     })
@@ -128,7 +128,7 @@ async function handleFetch(request: Request) {
 
   if (url.pathname === '/api/db/init' && request.method === 'POST') {
     // Initialize basic tables
-    await env.DB.exec(\`
+    await env.DB.exec(`
       CREATE TABLE IF NOT EXISTS logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         level TEXT NOT NULL,
@@ -141,7 +141,7 @@ async function handleFetch(request: Request) {
         username TEXT UNIQUE NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
-    \`)
+    `)
     
     return new Response(JSON.stringify({ 
       success: true, 
