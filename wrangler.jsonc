@@ -10,14 +10,7 @@
   "kv_namespaces": [
     {
       "binding": "STORAGE",
-      "id": "your_kv_namespace_id"
-    }
-  ],
-  
-  "r2_buckets": [
-    {
-      "binding": "FILES",
-      "bucket_name": "cloud-code-files"
+      "id": "b940ea6c8f724be58c2261929298fcac"
     }
   ],
   
@@ -25,11 +18,18 @@
     {
       "binding": "DB",
       "database_name": "cloud-code-db",
-      "database_id": "your_d1_database_id"
+      "database_id": "e3d33575-48dd-45f4-8f9f-0318a2d2224f"
     }
   ],
   
   "vars": {
     "USE_CONTAINER": "false"
-  }
+  },
+  
+  "migrations": [
+    {
+      "tag": "v2",
+      "deleted_classes": ["AgentContainer"]
+    }
+  ]
 }

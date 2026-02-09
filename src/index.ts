@@ -39,8 +39,8 @@ async function handleFetch(request: Request) {
     return new Response(JSON.stringify({ 
       status: 'running', 
       version: 'free-tier',
-      services: ['KV', 'R2', 'D1'],
-      message: 'Cloud Code Bot Free Edition - Full Features'
+      services: ['KV', 'D1'],
+      message: 'Cloud Code Bot Free Edition - KV & D1'
     }), {
       headers: { 'Content-Type': 'application/json' }
     })
@@ -64,43 +64,6 @@ async function handleFetch(request: Request) {
     return new Response(value, {
       headers: { 'Content-Type': 'application/json' }
     })
-  }
-
-  // R2 File Storage Endpoints
-  if (url.pathname === '/api/files' && request.method === 'POST') {
-    const formData = await request.formData()
-    const file = formData.get('file') as File
-    if (!file) {
-      return new Response('No file provided', { status: 400 })
-    }
-    
-    const key = `uploads/\${Date.now()}-\${file.name}`
-    await env.FILES.put(key, file.stream(), {
-      httpMetadata: { contentType: file.type }
-    })
-    
-    return new Response(JSON.stringify({ 
-      success: true, 
-      key,
-      url: `/api/files/\${key}`
-    }), {
-      headers: { 'Content-Type': 'application/json' }
-    })
-  }
-
-  if (url.pathname.startsWith('/api/files/') && request.method === 'GET') {
-    const key = url.pathname.replace('/api/files/', '')
-    const object = await env.FILES.get(key)
-    
-    if (!object) {
-      return new Response('File not found', { status: 404 })
-    }
-    
-    const headers = new Headers()
-    object.writeHttpMetadata(headers)
-    headers.set('etag', object.httpEtag)
-    
-    return new Response(object.body, { headers })
   }
 
   // D1 Database Endpoints
@@ -157,18 +120,12 @@ async function handleFetch(request: Request) {
     version: '2.0.0',
     services: {
       kv: 'Key-Value storage for config and cache',
-      r2: 'Object storage for files and images', 
       d1: 'SQL database for structured data'
     },
     endpoints: [
-      // KV
       { method: 'GET', path: '/api/status', desc: 'Service status' },
       { method: 'POST', path: '/api/kv', desc: 'Store data in KV' },
       { method: 'GET', path: '/api/kv/:key', desc: 'Retrieve from KV' },
-      // R2
-      { method: 'POST', path: '/api/files', desc: 'Upload file to R2' },
-      { method: 'GET', path: '/api/files/:key', desc: 'Download file from R2' },
-      // D1
       { method: 'POST', path: '/api/db/init', desc: 'Initialize database tables' },
       { method: 'POST', path: '/api/db/query', desc: 'Execute SQL query' }
     ]
@@ -180,48 +137,3 @@ async function handleFetch(request: Request) {
 export default {
   fetch: handleFetch,
 } satisfies ExportedHandler<Cloudflare.Env>
-
-// Free tier limits configuration
-const FREE_TIER_LIMITS = {
-  kv: {
-    maxStorageBytes: 1024 * 1024 * 1024, // 1GB
-    maxKeySize: 512 * 1024, // 512KB per key
-    maxValueSize: 25 * 1024 * 1024, // 25MB per value
-  },
-  r2: {
-    maxStorageBytes: 10 * 1024 * 1024 * 1024, // 10GB/month
-    maxFileSize: 300 * 1024 * 1024, // 300MB per file
-    maxFilesPerDay: 1000,
-  },
-  d1: {
-    maxStorageBytes: 500 * 1024 * 1024, // 500MB
-    maxQueryLength: 100000, // 100KB per query
-    maxRowsPerQuery: 50000,
-  },
-  requests: {
-    maxPerDay: 100000, // 100k requests/day
-  }
-}
-
-// Check limits before operations
-async function checkLimits(type: 'kv' | 'r2' | 'd1', size: number): Promise<Response | null> {
-  const limits = FREE_TIER_LIMITS[type]
-  
-  if (type === 'kv' && size > limits.maxValueSize) {
-    return new Response(JSON.stringify({
-      error: 'KV value too large',
-      limit: limits.maxValueSize,
-      received: size
-    }), { status: 413 })
-  }
-  
-  if (type === 'r2' && size > limits.maxFileSize) {
-    return new Response(JSON.stringify({
-      error: 'File too large',
-      limit: limits.maxFileSize,
-      received: size
-    }), { status: 413 })
-  }
-  
-  return null
-}
