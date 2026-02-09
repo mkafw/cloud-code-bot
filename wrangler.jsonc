@@ -23,13 +23,8 @@
   ],
   
   "vars": {
-    "USE_CONTAINER": "false"
-  },
-  
-  "migrations": [
-    {
-      "tag": "v2",
-      "deleted_classes": ["AgentContainer"]
-    }
-  ]
+    "USE_CONTAINER": "false",
+    "SERVER_USERNAME": "kamiya",
+    "SERVER_PASSWORD": "kamiya"
+  }
 }
